@@ -11,6 +11,7 @@ import javax.swing.JFrame;
 import javax.swing.JPanel;
 
 import model.Model;
+import prefuse.Visualization;
 import prefuse.controls.ControlAdapter;
 import prefuse.data.Tree;
 import prefuse.visual.VisualItem;
@@ -19,6 +20,7 @@ import prefuse.visual.VisualItem;
 public class MapCreatorView extends JFrame implements IView {
 	private Model model;
     public static final String TREE_CHI = "/Users/Devin/Documents/.workspace/prefuse-beta/data/chi-ontology.xml.gz";
+    private static final String tree = "tree";
 	
     private JPanel layout;
     	private JButton save;
@@ -54,7 +56,6 @@ public class MapCreatorView extends JFrame implements IView {
 		
         treeView.addControlListener(new ControlAdapter() {
             public void itemClicked(VisualItem item, MouseEvent e) {
-            	System.out.println("clicked!");
                 if ( item.canGetString("name") )
                 	model.openWindowFromName(item.getString("name"));
             }
@@ -89,16 +90,9 @@ public class MapCreatorView extends JFrame implements IView {
 	}
 	
 	public void updateView () {
-		layout.remove(treeView);
-		treeView = generateTree();//model.updateTree(treeView);
-		layout.add(treeView);
-        treeView.addControlListener(new ControlAdapter() {
-            public void itemClicked(VisualItem item, MouseEvent e) {
-            	System.out.println("clicked!");
-                if ( item.canGetString("name") )
-                	model.openWindowFromName(item.getString("name"));
-            }
-        });
-        this.pack();
+		Visualization vis = treeView.getM_vis();
+		vis.reset();
+		vis.add(tree, model.updateTree());
+		vis.run("repaint");
 	}//updateView
 }//MapCreatorView

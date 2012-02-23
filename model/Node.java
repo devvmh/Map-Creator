@@ -90,10 +90,8 @@ public class Node {
 
 	public void bringViewToFront () {
 		if (view == null) {
-			System.out.println ("opened window for node" + name);
 			new NodeEditorView (this).setVisible(true);
 		} else {
-			System.out.println ("focussing " + name);
 			view.requestFocus();
 			view.toFront();
 		}//if
@@ -104,7 +102,7 @@ public class Node {
 	}//toString
 	
 	public String toString (String linePrefix) {
-		String value = "{\n";
+		String value = linePrefix + "{\n";
 		value += linePrefix + "\"name\": \"" + String.valueOf(name) + "\",\n";
 		value += linePrefix + "\"id\": \"" + String.valueOf(id) + "\",\n";
 		value += linePrefix + "\"data\": {\n";
@@ -116,9 +114,12 @@ public class Node {
 			value += child.toString(linePrefix + "	");
 			value += ",";
 		}
-		value = value.substring(0, value.length() - 1); //remove comma
+		if (children.size () != 0) {
+			value = value.substring(0, value.length() - 1); //remove comma
+		}//if
+		value += "\n";
 		value += linePrefix + "]\n";
-		value += linePrefix + "}"; //no newline
+		value += linePrefix + "}"; //no newline, one less tab on prefix
 		
 		return value;
 	}

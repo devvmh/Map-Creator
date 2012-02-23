@@ -87,12 +87,6 @@ public class TreeView extends Display {
         ItemAction edgeColor = new ColorAction(treeEdges,
                 VisualItem.STROKECOLOR, ColorLib.rgb(200,200,200));
         
-        // quick repaint
-        ActionList repaint = new ActionList();
-        repaint.add(nodeColor);
-        repaint.add(new RepaintAction());
-        m_vis.putAction("repaint", repaint);
-        
         // full paint
         ActionList fullPaint = new ActionList();
         fullPaint.add(nodeColor);
@@ -116,6 +110,17 @@ public class TreeView extends Display {
         
         AutoPanAction autoPan = new AutoPanAction();
         
+        // quick repaint
+        ActionList repaint = new ActionList();
+        repaint.add(new FisheyeTreeFilter(tree, 2));
+        repaint.add(new FontAction(treeNodes, FontLib.getFont("Tahoma", 16)));
+        repaint.add(treeLayout);
+        repaint.add(subLayout);
+        repaint.add(textColor);
+        repaint.add(nodeColor);
+        repaint.add(edgeColor);
+        m_vis.putAction("repaint", repaint);
+        
         // create the filtering and layout
         ActionList filter = new ActionList();
         filter.add(new FisheyeTreeFilter(tree, 2));
@@ -138,6 +143,17 @@ public class TreeView extends Display {
         animate.add(new RepaintAction());
         m_vis.putAction("animate", animate);
         m_vis.alwaysRunAfter("filter", "animate");
+        
+        ActionList animate2 = new ActionList(1000);
+        animate2.setPacingFunction(new SlowInSlowOutPacer());
+        //animate2.add(autoPan);
+        animate2.add(new QualityControlAnimator());
+        animate2.add(new VisibilityAnimator(tree));
+        animate2.add(new LocationAnimator(treeNodes));
+        animate2.add(new ColorAnimator(treeNodes));
+        animate2.add(new RepaintAction());
+        m_vis.putAction("animate2", animate2);
+        m_vis.alwaysRunAfter("repaint", "animate2");
         
         // create animator for orientation changes
         ActionList orient = new ActionList(2000);
@@ -188,6 +204,10 @@ public class TreeView extends Display {
             }
         });
     }
+    
+    public Visualization getM_vis () {
+    	return m_vis;
+    }//getM_vis
     
     // ------------------------------------------------------------------------
     

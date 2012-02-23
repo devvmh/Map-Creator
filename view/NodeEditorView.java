@@ -89,6 +89,8 @@ public class NodeEditorView extends JFrame implements IView {
 					desc = new JTextField(node.desc);
 			childScroller = new ScrollPane();
 				children = new JPanel(new FlowLayout());
+				
+		name.setRequestFocusEnabled(true);
 	}//initializeWidgets
 	
 	private void addListeners() {
