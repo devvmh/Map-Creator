@@ -14,6 +14,7 @@ import javax.swing.JLabel;
 
 import prefuse.data.Table;
 import prefuse.data.Tree;
+import prefuse.visual.VisualItem;
 import view.IView;
 import exceptions.UnexpectedJSONTokenException;
 
@@ -21,7 +22,8 @@ public class Model {
 	protected static List<IView> views;
 	public MapCreatorTableModel tableModel;
 	private static Model instance = new Model();
-	private Node root = new Node ();
+	private Node root = new Node (null);
+	private static boolean saved = true;
 	
 	private final Object [][] noDataYet = new Object [0][0];
 	private final String [] headers = {"Name", "ID", "Important", "URL", "Icon", "Image", "Desc", "Children"};
@@ -59,6 +61,8 @@ public class Model {
 				error.getContentPane().add(new JLabel("Couldn't save file!"));
 				error.setVisible(true);
 			}
+		saved = true;
+		tellAllViewsItsSaved();
 	}
 	
 	public Tree updateTree () {
@@ -83,11 +87,23 @@ public class Model {
 		}
 	}//addChild
 	
+	//should the save button be available?
+	public static boolean isSaved() {
+		return saved;
+	}
+	
 	public static void updateAllViews () {
+		saved = false;
 		for (IView v : views) {
 			v.updateView ();
 		}//for
 	}//updateAllViews
+	
+	public static void tellAllViewsItsSaved() {
+		for (IView v : views) {
+			v.updateView ();
+		}//for
+	}
 	
 	public static Model getInstance() {
 		return instance;
@@ -117,10 +133,10 @@ public class Model {
 	public void initFromJSON(String json) {
 		StringTokenizer st = new StringTokenizer (json);
 		try {
-			check (st, "{");
-			initFromJSON (root, st);
+			check (st, "{"); //see below
+			initFromJSON (root, st); //see below
 		} catch (UnexpectedJSONTokenException e) {
-			root = new Node (); //clear this and start over
+			root = new Node (null); //clear this and start over
 			System.out.println ("initialization failed");
 			while (st.hasMoreTokens()) {
 				System.out.println ("<" + st.nextToken() + ">");
@@ -137,6 +153,8 @@ public class Model {
 	}
 	
 	private void initFromJSON (Node node, StringTokenizer st) throws UnexpectedJSONTokenException {
+		String nextToken;
+		
 		check(st, "\"name\":");
 		String name = st.nextToken();
 		while (! name.endsWith("\",")) {
@@ -164,14 +182,27 @@ public class Model {
 
 		check (st, "\"url\":");
 		String url = st.nextToken();
-		node.url = url.substring(1, url.length() - 1);
+		node.url = url.substring(1, url.length() - 2);
+		
+		check (st, "\"desc\":");
+		check (st, "[");
+		String desc = "";
+		nextToken = st.nextToken();
+		while (! nextToken.equals("]")) {
+			desc += nextToken;
+			desc += " ";
+			nextToken = st.nextToken();
+		}
+		//OK, so we dropped the space and the ], but we need to
+		//get rid of the initial " and the final ", as well as the superfluous space
+		node.desc = desc.substring(1, desc.length() - 2);
+		
 		check(st, "},");
 		check(st, "\"children\":");
 		check(st, "[");
 
-		String nextToken;
 		while ((nextToken = st.nextToken()).equals("{")) {
-			Node child = new Node ();
+			Node child = new Node (node);
 			initFromJSON (child, st);
 			node.addChild(child);
 		}//while
@@ -182,4 +213,14 @@ public class Model {
 		}
 		//success!
 	}//initFromJSON
+
+	public void delete(VisualItem item) {
+		System.err.println("Warning, delete not implemented yet");
+		System.out.println(item);
+		if (root().equals(item)) {
+			System.out.println("Yeah, that's root");
+		} else {
+			System.out.println("Got here");
+		}
+	}
 }//Model base class

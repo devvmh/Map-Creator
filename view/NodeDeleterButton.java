@@ -9,18 +9,21 @@ import model.Model;
 import model.Node;
 
 @SuppressWarnings("serial")
-public class NodeAdderButton extends JButton {
+public class NodeDeleterButton extends JButton {
 	Node parent;
-	public NodeAdderButton (final Node parent) {
-		super ("+");
+	Node node;
+	public NodeDeleterButton (final Node parent, final Node node) {
+		super ("-");
 		
 		this.parent = parent;
+		this.node = node;
 		
 		this.addActionListener (new ActionListener () {
 			public void actionPerformed(ActionEvent e) {
-				Node child = new Node(parent);
-				new NodeEditorView(parent, child).setVisible(true);
-				parent.addChild(child);
+				node.closeView();
+				if (parent != null) {
+					parent.removeChild(node);
+				}
 				Model.updateAllViews();
 			}
 		});

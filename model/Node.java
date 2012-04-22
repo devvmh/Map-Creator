@@ -1,11 +1,10 @@
 package model;
 
+import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.util.Vector;
 
 import javax.swing.JTextField;
-
-import listeners.WindowClosingListener;
 
 import view.NodeEditorView;
 
@@ -20,9 +19,11 @@ public class Node {
 	public String desc;
 	public Vector<Node> children;
 	
+	private final Node parent;
+	
 	private NodeEditorView view;
 	
-	public Node () {
+	public Node (final Node parent) {
 		name = "";
 		id = "";
 		manualID = false;
@@ -32,6 +33,7 @@ public class Node {
 		image = "";
 		desc = "";
 		children = new Vector<Node>();
+		this.parent = parent;
 	}
 	
 	public NodeEditorView getView () {
@@ -56,7 +58,7 @@ public class Node {
 
 		//when the window is closed, I need to delete the reference in this object and set it to null
 		//view.close() will call this function with v = null (see if at the top)
-		view.addWindowListener(new WindowClosingListener () {
+		view.addWindowListener(new WindowAdapter () {
 			public void windowClosing(WindowEvent event) {
 				try {
 					view.close();
@@ -75,6 +77,10 @@ public class Node {
 	public void addChild (Node child) {
 		children.add(child);
 	}
+	
+	public void removeChild(Node child) {
+		children.remove(child);
+	}
 
 	public void makeIDFromName(JTextField toUpdate) {
 		if (manualID) return;
@@ -90,12 +96,16 @@ public class Node {
 
 	public void bringViewToFront () {
 		if (view == null) {
-			new NodeEditorView (this).setVisible(true);
+			new NodeEditorView (parent, this).setVisible(true);
 		} else {
 			view.requestFocus();
 			view.toFront();
 		}//if
 	}//bringViewToFront
+	
+	public void closeView() {
+		view.close();
+	}
 	
 	public String toString () {
 		return toString("");
@@ -107,7 +117,8 @@ public class Node {
 		value += linePrefix + "\"id\": \"" + String.valueOf(id) + "\",\n";
 		value += linePrefix + "\"data\": {\n";
 		value += linePrefix + "	\"important\": " + String.valueOf(important) + ",\n";
-		value += linePrefix + "	\"url\": \"" + String.valueOf (url) + "\"\n"; //need to add a comma when you add more values
+		value += linePrefix + "	\"url\": \"" + String.valueOf (url) + "\",\n";
+		value += linePrefix + "	\"desc\": [ \"" + String.valueOf(desc) + "\" ]\n"; //need to add a comma when you add more values
 		value += linePrefix + "},\n";
 		value += linePrefix + "\"children\": [\n";
 		for (Node child : children) {

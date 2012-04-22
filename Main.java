@@ -20,7 +20,9 @@ public class Main {
 			System.out.println ("No map.json file could be read, starting from scratch.");
 		}
 		new MapCreatorView ().setVisible(true);
-		new NodeEditorView (model.root()).setVisible(true);
+		
+		//null is because there's no parent
+		new NodeEditorView (null, model.root()).setVisible(true);
 	}
 	
 	public static String readFile (String filename) throws IOException {

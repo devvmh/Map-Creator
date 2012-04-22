@@ -7,7 +7,9 @@ import java.awt.ScrollPane;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
+import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.event.WindowEvent;
 
@@ -18,8 +20,6 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 
-import listeners.ComponentResizedListener;
-import listeners.KeyReleasedListener;
 import model.Model;
 import model.Node;
 
@@ -28,6 +28,7 @@ import model.Node;
 public class NodeEditorView extends JFrame implements IView {
 	private Model model = Model.getInstance();
 	private final Node node;
+	private final Node parent;
 	private final static int HEIGHT = 260;
 	
 	private JPanel layout;
@@ -51,11 +52,13 @@ public class NodeEditorView extends JFrame implements IView {
 		private ScrollPane childScroller;
 			private JPanel children;
 	
-	public NodeEditorView (Node node) {
+	public NodeEditorView (Node parent, Node node) {
 		super (node.name);
 		this.node = node;
 		if (node.getView() != null) node.getView().close();
 		node.setView(this);
+		
+		this.parent = parent;
 		
 		initializeWidgets();
 		addListeners ();
@@ -94,7 +97,7 @@ public class NodeEditorView extends JFrame implements IView {
 	}//initializeWidgets
 	
 	private void addListeners() {
-		name.addKeyListener(new KeyReleasedListener () {
+		name.addKeyListener(new KeyAdapter () {
 			public void keyReleased(KeyEvent e) {
 				//the new character
 				node.name = name.getText();
@@ -107,7 +110,7 @@ public class NodeEditorView extends JFrame implements IView {
 			}
 		});
 		
-		id.addKeyListener(new KeyReleasedListener () {
+		id.addKeyListener(new KeyAdapter () {
 			public void keyReleased(KeyEvent e) {
 				node.manualID = false;
 				node.id = id.getText();
@@ -120,31 +123,31 @@ public class NodeEditorView extends JFrame implements IView {
 			}
 		});
 		
-		url.addKeyListener(new KeyReleasedListener () {
+		url.addKeyListener(new KeyAdapter () {
 			public void keyReleased(KeyEvent e) {
 				node.url = url.getText();
 			};
 		});
 		
-		icon.addKeyListener(new KeyReleasedListener () {
+		icon.addKeyListener(new KeyAdapter () {
 			public void keyReleased(KeyEvent e) {
 				node.icon = icon.getText();
 			}
 		});
 		
-		image.addKeyListener(new KeyReleasedListener () {
+		image.addKeyListener(new KeyAdapter () {
 			public void keyReleased(KeyEvent e) {
 				node.image = image.getText();
 			}
 		});
 		
-		desc.addKeyListener(new KeyReleasedListener () {
+		desc.addKeyListener(new KeyAdapter () {
 			public void keyReleased(KeyEvent e) {
 				node.desc = desc.getText();
 			}
 		});
 		
-		this.addComponentListener(new ComponentResizedListener () {
+		this.addComponentListener(new ComponentAdapter () {
 			public void componentResized(ComponentEvent e) {
 				NodeEditorView.this.setSize (NodeEditorView.this.getSize().width, HEIGHT);
 			}
@@ -176,7 +179,6 @@ public class NodeEditorView extends JFrame implements IView {
 	
 	@Override
 	public void updateView() {
-		
 		this.setTitle(node.name);
 		
 		//update the buttons
@@ -187,6 +189,9 @@ public class NodeEditorView extends JFrame implements IView {
 			children.add(button);
 		}
 		children.add(new NodeAdderButton (this.node));
+		if (node.children.isEmpty()) {
+			children.add(new NodeDeleterButton(parent, node));
+		}
 		
 		this.pack();
 	}
@@ -201,12 +206,12 @@ public class NodeEditorView extends JFrame implements IView {
 }
 
 class NodeButtonListener implements ActionListener {
-	private Node n;
-	public NodeButtonListener (Node n) {
-		this.n = n;
+	private Node node;
+	public NodeButtonListener (Node node) {
+		this.node = node;
 	}
 	
 	public void actionPerformed (ActionEvent e) {
-		n.bringViewToFront();
+		node.bringViewToFront();
 	}
 }//NodeButtonListener

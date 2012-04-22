@@ -56,8 +56,15 @@ public class MapCreatorView extends JFrame implements IView {
 		
         treeView.addControlListener(new ControlAdapter() {
             public void itemClicked(VisualItem item, MouseEvent e) {
-                if ( item.canGetString("name") )
-                	model.openWindowFromName(item.getString("name"));
+            	if (e.getButton() != MouseEvent.BUTTON1 ||
+            			e.isControlDown()) {
+            		//right click
+            		model.delete(item);
+            	} else {
+            		if (item.canGetString("name")) {
+            			model.openWindowFromName(item.getString("name"));
+            		}
+            	}
             }
         });
 	}//addListeners
@@ -90,6 +97,11 @@ public class MapCreatorView extends JFrame implements IView {
 	}
 	
 	public void updateView () {
+		if (Model.isSaved()) {
+			save.setEnabled(false);
+		} else {
+			save.setEnabled(true);
+		}
 		Visualization vis = treeView.getM_vis();
 		vis.reset();
 		vis.add(tree, model.updateTree());
